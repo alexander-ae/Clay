@@ -12,6 +12,11 @@ from .jinja_includewith import IncludeWith
 from .markdown_ext import MarkdownExtension
 from .tglobals import active
 
+# webassets
+from jinja2 import Environment as Jinja2Environment
+from webassets import Environment as AssetsEnvironment
+from webassets.ext.jinja2 import AssetsExtension
+
 
 APP_NAME = 'clay'
 
@@ -70,6 +75,13 @@ class WSGIApplication(Flask):
         resp.mimetype = mimetype
         return resp
 
+    def create_jinja_environment(self):
+        rv = super(WSGIApplication, self).create_jinja_environment()
+        assets_env = AssetsEnvironment('./source/static')
+        assets_env.url = '/static'
+        rv.assets_environment = assets_env
+        return rv
+
 
 def get_jinja_loader(source_dir):
     return ChoiceLoader([
@@ -81,5 +93,5 @@ def get_jinja_loader(source_dir):
 def get_jinja_options():
     return {
         'autoescape': True,
-        'extensions': [MarkdownExtension, 'jinja2.ext.with_', IncludeWith],
+        'extensions': [MarkdownExtension, 'jinja2.ext.with_', IncludeWith, AssetsExtension],
     }
